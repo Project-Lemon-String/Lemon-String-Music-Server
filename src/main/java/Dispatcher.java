@@ -12,9 +12,11 @@ public class Dispatcher{
     }
 
     public String dispatch(String request){
+        //Register our potential objects that we may need based on request
         registerObject(new SongServices(), "SongServices");
         registerObject(new UserServices(), "UserServices");
         
+        //Create our jsonObjects that we will return and our jsonify our request
         System.out.println(request + "\n");
         JsonObject jsonReturn = new JsonObject();
         JsonParser parser = new JsonParser();
@@ -33,7 +35,7 @@ public class Dispatcher{
                 paramsList.add(p.getValue().getAsString());
             }
 
-            // Prepare the return
+            // Invoke the method needed based ObjectName and methodName
 
             if(objectNameStr.equals("UserServices")){
                 if(remoteMethodStr.equals("login")){
@@ -73,7 +75,7 @@ public class Dispatcher{
         
 
         } catch (Exception e){
-        //    System.out.println(e);
+        //    Catch any errors that may occur and return it
             e.printStackTrace();
             jsonReturn.addProperty("error", "Error on " + jsonRequest.get("objectName").getAsString() + "." + jsonRequest.get("remoteMethod").getAsString());
         }

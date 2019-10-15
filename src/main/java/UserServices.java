@@ -80,7 +80,6 @@ public class UserServices{
 
         //Check if user exists
         try {
-            JsonObject user = userList.get(username).getAsJsonObject();
             userExists = true;
         }
         catch (NullPointerException e){}
