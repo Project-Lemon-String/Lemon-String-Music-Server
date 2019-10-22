@@ -1,6 +1,15 @@
-import java.io.*;
-import java.util.*;
-import com.google.gson.*;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 public class UserServices{
 
@@ -80,6 +89,7 @@ public class UserServices{
 
         //Check if user exists
         try {
+            JsonObject user = userList.get(username).getAsJsonObject();
             userExists = true;
         }
         catch (NullPointerException e){}

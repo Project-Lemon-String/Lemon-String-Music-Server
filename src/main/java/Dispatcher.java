@@ -1,6 +1,10 @@
-import java.util.*;
-import java.lang.reflect.*;
-import com.google.gson.*;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 public class Dispatcher{
 
@@ -25,54 +29,30 @@ public class Dispatcher{
         try {
             // Obtains the object pointing to SongServices or UserServices
             Object object = ListOfObjects.get(jsonRequest.get("objectName").getAsString());
-            
-            String remoteMethodStr = jsonRequest.get("remoteMethod").getAsString();
-            String objectNameStr = jsonRequest.get("objectName").getAsString();
-            JsonObject params = jsonRequest.get("param").getAsJsonObject();
-            ArrayList<String> paramsList = new ArrayList<>();
+            Method[] methods = object.getClass().getMethods();
+            Method method = null;
 
-            for(Map.Entry<String, JsonElement> p : params.entrySet()){
-                paramsList.add(p.getValue().getAsString());
+            for (int i=0; i<methods.length; i++){   
+                if (methods[i].getName().equals(jsonRequest.get("remoteMethod").getAsString()))
+                    method = methods[i];
             }
 
+            Class[] types =  method.getParameterTypes();
+            Object[] parameter = new Object[types.length];
+            String[] strParam = new String[types.length];
+            JsonObject jsonParam = jsonRequest.get("param").getAsJsonObject();
+
+            int j = 0;
+            int i = 0;
+            for (Map.Entry<String, JsonElement>  entry  :  jsonParam.entrySet())
+            {
+                strParam[j++] = entry.getValue().getAsString();
+                parameter[i++] = new String(strParam[j-1]);
+            }
+
+            jsonReturn = (JsonObject) method.invoke(object, parameter);
             // Invoke the method needed based ObjectName and methodName
 
-            if(objectNameStr.equals("UserServices")){
-                if(remoteMethodStr.equals("login")){
-                    Class<?>[] paramTypes = {String.class, String.class};
-                    Method loginMethod = object.getClass().getMethod(remoteMethodStr, paramTypes);
-                    jsonReturn = (JsonObject) loginMethod.invoke(object, paramsList.get(0), paramsList.get(1));
-                }
-                if(remoteMethodStr.equals("signup")){
-                    Class<?>[] paramTypes = {String.class, String.class, String.class};
-                    Method signupMethod = object.getClass().getMethod(remoteMethodStr, paramTypes);
-                    jsonReturn = (JsonObject) signupMethod.invoke(object, paramsList.get(0), paramsList.get(1), paramsList.get(2));
-                }
-                if(remoteMethodStr.equals("addPlaylist")){
-                    Class<?>[] paramTypes = {String.class, String.class};
-                    Method addPlaylistMethod = object.getClass().getMethod(remoteMethodStr, paramTypes);
-                    jsonReturn = (JsonObject) addPlaylistMethod.invoke(object, paramsList.get(0), paramsList.get(1));
-                }
-                if(remoteMethodStr.equals("deletePlaylist")){
-                    Class<?>[] paramTypes = {String.class, String.class};
-                    Method removePlaylistMethod = object.getClass().getMethod(remoteMethodStr, paramTypes);
-                    jsonReturn = (JsonObject) removePlaylistMethod.invoke(object, paramsList.get(0), paramsList.get(1));
-                }
-                if(remoteMethodStr.equals("searchSong")){
-                    Class<?>[] paramTypes = {String.class};
-                    Method searchSongMethod = object.getClass().getMethod(remoteMethodStr, paramTypes);
-                    jsonReturn = (JsonObject) searchSongMethod.invoke(object, paramsList.get(0));
-                }
-            }
-
-            if(objectNameStr.equals("SongServices")){
-                if(remoteMethodStr.equals("playSong")){
-                    Class<?>[] paramTypes = {String.class};
-                    Method playSongMethod = object.getClass().getMethod(remoteMethodStr, paramTypes);
-                    jsonReturn = (JsonObject) playSongMethod.invoke(object, paramsList.get(0));
-                }
-            }
-        
 
         } catch (Exception e){
         //    Catch any errors that may occur and return it
